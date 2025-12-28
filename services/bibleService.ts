@@ -15,19 +15,24 @@ export interface BibleBook {
 
 const DB_NAME = 'HolyBibleDB_v2';
 const STORE_NAME = 'Chapters_Cache';
-const DB_VERSION = 1;
+const METADATA_STORE = 'Meta_Store';
+const DB_VERSION = 2; // Incremented for new store
 
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (e) => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+      if (!db.objectStoreNames.contains(METADATA_STORE)) db.createObjectStore(METADATA_STORE);
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
 };
+
+// In-Memory Cache
+const memoryCache = new Map<string, VerseData[]>();
 
 const getFromDB = async (key: string): Promise<VerseData[] | null> => {
   try {
@@ -48,7 +53,7 @@ const saveToDB = async (key: string, data: VerseData[]) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     store.put(data, key);
-  } catch {}
+  } catch { }
 };
 
 export const BIBLE_BOOKS: BibleBook[] = [
@@ -101,27 +106,37 @@ const fetchWithRetry = async (url: string, retries = 2): Promise<any> => {
 
 export const getVerseText = async (translation: Translation, book: string, chapter: string): Promise<VerseData[]> => {
   const key = `${translation}_${book}_${chapter}`;
-  const cached = await getFromDB(key);
-  if (cached) return cached;
 
+  // 1. Check Memory Cache
+  if (memoryCache.has(key)) return memoryCache.get(key)!;
+
+  // 2. Check IndexedDB
+  const cached = await getFromDB(key);
+  if (cached) {
+    memoryCache.set(key, cached); // Populate memory
+    return cached;
+  }
+
+  // 3. Fallback to Network
   try {
     const translationQuery = translation.toLowerCase();
     const data = await fetchWithRetry(`https://bible-api.com/${book}%20${chapter}?translation=${translationQuery}`);
-    
+
     if (!data.verses || data.verses.length === 0) {
       throw new Error("No verses returned");
     }
 
-    const verses = data.verses.map((v: any) => ({ 
-      number: v.verse, 
-      text: v.text.trim() 
+    const verses = data.verses.map((v: any) => ({
+      number: v.verse,
+      text: v.text.trim()
     }));
-    
+
     saveToDB(key, verses);
+    memoryCache.set(key, verses); // Populate memory
     return verses;
   } catch (error) {
     console.error("Bible Engine Error:", error);
-    return [{ number: 0, text: "AI unavailable right now. Please continue reading (Check your connection).", isNotice: true }];
+    return [{ number: 0, text: "Chapter unavailable. Please check connection.", isNotice: true }];
   }
 };
 
@@ -129,22 +144,55 @@ export const isChapterOffline = async (translation: Translation, book: string, c
   return !!(await getFromDB(`${translation}_${book}_${chapter}`));
 };
 
-export const downloadFullKJV = async (onProgress: (p: number) => void) => {
-  const books = [...BIBLE_BOOKS, ...HISTORICAL_BOOKS];
-  const total = books.reduce((acc, b) => acc + b.chapters, 0);
-  let current = 0;
-  for (const book of books) {
-    for (let c = 1; c <= book.chapters; c++) {
-      try {
-        await getVerseText(Translation.KJV, book.name, c.toString());
-      } catch (e) {
-        console.warn(`Sync failed for ${book.name} ${c}`);
-      }
-      current++;
-      onProgress(Math.floor((current / total) * 100));
-      // Adaptive delay to prevent UI freezing
-      if (current % 15 === 0) await new Promise(r => setTimeout(r, 20));
+
+// --- OFFLINE KJV PREPARATION ---
+
+export const initializeOfflineKJV = async (onProgress: (msg: string) => void): Promise<void> => {
+  try {
+    // Check if already initialized
+    const db = await openDB();
+    const isReady = await new Promise((resolve) => {
+      const tx = db.transaction(METADATA_STORE, 'readonly');
+      const req = tx.objectStore(METADATA_STORE).get('kjv_ready');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(false);
+    });
+
+    if (isReady) return;
+
+    onProgress("Downloading KJV data...");
+
+    // Fetch the local JSON file
+    const res = await fetch('/bible/kjv.json');
+    if (!res.ok) throw new Error("Local KJV file missing");
+
+    const data = await res.json();
+
+    onProgress("Optimizing for offline use...");
+
+    const tx = db.transaction([STORE_NAME, METADATA_STORE], 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+
+    let count = 0;
+    for (const chapterData of data) {
+      const key = `${Translation.KJV}_${chapterData.book}_${chapterData.chapter}`;
+      store.put(chapterData.verses, key);
+      count++;
     }
+
+    tx.objectStore(METADATA_STORE).put(true, 'kjv_ready');
+
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => {
+        console.log(`Available offline: ${count} chapters`);
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    });
+
+  } catch (error) {
+    console.warn("Offline KJV init failed:", error);
+    // Don't block app, just log
   }
 };
 

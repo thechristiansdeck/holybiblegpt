@@ -40,6 +40,7 @@ const NotFoundView = lazy(() => import('./components/NotFoundView'));
 
 import { Translation, ReaderState, PassageLink, AppMode, AppTab } from './types';
 import { storage } from './services/storageService';
+import { initializeOfflineKJV } from './services/bibleService';
 
 const App: React.FC = () => {
   const [currentTranslation, setCurrentTranslation] = useState<Translation>(Translation.KJV);
@@ -58,9 +59,18 @@ const App: React.FC = () => {
     verses: ''
   });
 
+  const [isPreparing, setIsPreparing] = useState(false);
+  const [prepMessage, setPrepMessage] = useState("");
+
   useEffect(() => {
     const accepted = localStorage.getItem('hbgpt_onboarding_accepted');
     if (!accepted) setShowOnboarding(true);
+
+    // KJV Offline Init
+    initializeOfflineKJV((msg) => {
+      setIsPreparing(true);
+      setPrepMessage(msg);
+    }).then(() => setIsPreparing(false));
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -121,7 +131,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'home': return <HomeView onOpenPassage={handleOpenPassage} onTabChange={setActiveTab} translation={currentTranslation} />;
-      case 'read': return <BibleReader state={readerState} translation={currentTranslation} onClose={() => {}} onNavigate={handleNavigateReader} onStudyVerse={handleStudyVerse} onReport={() => setShowReportForm(true)} />;
+      case 'read': return <BibleReader state={readerState} translation={currentTranslation} onClose={() => { }} onNavigate={handleNavigateReader} onStudyVerse={handleStudyVerse} onReport={() => setShowReportForm(true)} />;
       case 'library': return <LibraryView onOpenPassage={handleOpenPassage} />;
       case 'learn': return <LearningView onOpenPassage={handleOpenPassage} onStudyEvent={handleStudyEvent} />;
       case 'references': return <ReferencedView onOpenPassage={handleOpenPassage} />;
@@ -153,29 +163,29 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-black overflow-hidden selection:bg-[#D4AF37] selection:text-black">
       <Header onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} onShowSearch={() => setActiveTab('search')} />
-      <SideDrawer 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        activeTab={activeTab} 
+      <SideDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        activeTab={activeTab}
         onTabChange={(tab) => {
           if (tab === 'study') { setActiveTab('study'); }
           else { setActiveTab(tab); }
           setIsMenuOpen(false);
-        }} 
-        currentTranslation={currentTranslation} 
-        onTranslationChange={setCurrentTranslation} 
+        }}
+        currentTranslation={currentTranslation}
+        onTranslationChange={setCurrentTranslation}
       />
       <main className="flex-1 flex overflow-hidden relative" role="main">
-        <div className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[450px] lg:relative lg:w-[450px] bg-black border-r border-stone-800 transition-transform duration-500 ease-in-out transform ${activeTab === 'study' ? 'translate-x-0' : '-translate-x-full lg:absolute lg:-left-[450px]'}`}>
-          <ChatInterface 
-            currentTranslation={currentTranslation} 
-            onOpenReader={handleOpenReader} 
-            currentMode={currentMode} 
-            pendingQuery={pendingQuery?.query} 
-            isVerseSpecific={pendingQuery?.isVerseSpecific} 
-            onQueryProcessed={() => setPendingQuery(null)} 
-            onClose={() => setActiveTab('read')} 
-            onReport={() => setShowReportForm(true)} 
+        <div className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[400px] xl:relative xl:w-[400px] bg-black border-r border-stone-800 transition-transform duration-500 ease-in-out transform ${activeTab === 'study' ? 'translate-x-0' : '-translate-x-full xl:absolute xl:-left-[400px]'}`}>
+          <ChatInterface
+            currentTranslation={currentTranslation}
+            onOpenReader={handleOpenReader}
+            currentMode={currentMode}
+            pendingQuery={pendingQuery?.query}
+            isVerseSpecific={pendingQuery?.isVerseSpecific}
+            onQueryProcessed={() => setPendingQuery(null)}
+            onClose={() => setActiveTab('read')}
+            onReport={() => setShowReportForm(true)}
             onTabChange={setActiveTab}
           />
         </div>
@@ -203,6 +213,17 @@ const App: React.FC = () => {
       {showOnboarding && <Onboarding onAccept={() => setShowOnboarding(false)} />}
       {showHistoricalWarning && <HistoricalWarning onContinue={() => { storage.acceptWarning(); setShowHistoricalWarning(false); }} onGoBack={() => setShowHistoricalWarning(false)} />}
       {showReportForm && <ReportForm onClose={() => setShowReportForm(false)} />}
+
+      {/* Offline Prep Overlay */}
+      {isPreparing && (
+        <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center space-y-6">
+          <div className="w-16 h-16 border-t-2 border-[#D4AF37] rounded-full animate-spin"></div>
+          <div>
+            <h3 className="text-xl font-bold text-[#D4AF37] uppercase tracking-widest">Setting up Bible</h3>
+            <p className="text-stone-400 mt-2 text-xs uppercase tracking-wider">{prepMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

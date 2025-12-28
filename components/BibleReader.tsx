@@ -16,12 +16,13 @@ interface BibleReaderProps {
 
 const ALL_BOOKS = [...BIBLE_BOOKS, ...HISTORICAL_BOOKS];
 
-const BibleReader: React.FC<BibleReaderProps> = ({ 
-  state, 
-  translation, 
+const BibleReader: React.FC<BibleReaderProps> = ({
+  state,
+  translation,
   onNavigate,
   onStudyVerse,
-  onReport
+  onReport,
+  onClose
 }) => {
   const [content, setContent] = useState<VerseData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,11 +91,11 @@ const BibleReader: React.FC<BibleReaderProps> = ({
       <div className="flex-1 flex items-center justify-center p-6 bg-black">
         <div className="glass-dark border border-[#D4AF37]/20 p-10 rounded-[2.5rem] max-w-xl space-y-8 shadow-2xl">
           <header className="text-center space-y-4">
-             <div className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.4em]">Historical Context</div>
-             <h2 className="accent-font text-4xl gold-gradient-text uppercase tracking-widest">{state.book}</h2>
+            <div className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.4em]">Historical Context</div>
+            <h2 className="accent-font text-4xl gold-gradient-text uppercase tracking-widest">{state.book}</h2>
           </header>
           <p className="bible-font text-stone-300 leading-relaxed italic text-center text-lg">
-             “{HISTORICAL_INTRODUCTIONS[state.book] || "A valuable historical witness."}”
+            “{HISTORICAL_INTRODUCTIONS[state.book] || "A valuable historical witness."}”
           </p>
           <button onClick={() => { setShowIntro(false); loadVerses(); }} className="w-full bg-[#D4AF37] text-black font-bold py-5 rounded-2xl uppercase tracking-widest text-xs">Enter Study</button>
         </div>
@@ -119,36 +120,40 @@ const BibleReader: React.FC<BibleReaderProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-           <button onClick={() => onNavigate(state.book, (Math.max(1, parseInt(state.chapter)-1)).toString())} className="p-2 text-stone-600 hover:text-white">←</button>
-           <button onClick={() => onNavigate(state.book, (Math.min(currentBookData.chapters, parseInt(state.chapter)+1)).toString())} className="p-2 text-stone-600 hover:text-white">→</button>
+          <button onClick={() => window.history.length > 1 ? window.history.back() : onClose()} className="p-2 text-stone-500 hover:text-[#D4AF37] flex items-center gap-1">
+            <span className="text-lg">←</span> <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Back</span>
+          </button>
+          <div className="h-4 w-px bg-white/10 mx-2"></div>
+          <button onClick={() => onNavigate(state.book, (Math.max(1, parseInt(state.chapter) - 1)).toString())} className="p-2 text-stone-600 hover:text-white">←</button>
+          <button onClick={() => onNavigate(state.book, (Math.min(currentBookData.chapters, parseInt(state.chapter) + 1)).toString())} className="p-2 text-stone-600 hover:text-white">→</button>
         </div>
       </div>
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 md:px-12 py-12 scroll-smooth">
-        <div className="max-w-4xl mx-auto w-full">
+        <div className="max-w-7xl mx-auto w-full">
           <header className="mb-16 text-center space-y-4">
             <h2 className="accent-font text-5xl font-bold tracking-[0.1em] gold-gradient-text uppercase">{state.book} {state.chapter}</h2>
             <p className="text-[10px] uppercase font-bold tracking-[0.4em] text-stone-700">Holy Scripture • {translation}</p>
           </header>
-          
+
           <div className="space-y-0 relative">
             {content.map((v, idx) => {
               const hColor = getVerseHighlight(v.number);
               return (
-                <div 
-                  key={v.number} 
+                <div
+                  key={v.number}
                   onClick={() => handleVerseClick(v.number)}
                   className={`group/verse relative flex flex-col gap-4 px-4 py-8 cursor-pointer transition-all ${selectedVerse === v.number ? 'bg-[#D4AF37]/10' : 'hover:bg-white/[0.01]'}`}
                 >
                   <div className="flex gap-8">
                     <span className="text-[10px] font-bold text-stone-600 w-8 shrink-0">{v.number}</span>
                     <div className="flex-1">
-                       <p 
-                        style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineHeight, backgroundColor: hColor || 'transparent' }} 
+                      <p
+                        style={{ fontSize: `${settings.fontSize}px`, lineHeight: settings.lineHeight, backgroundColor: hColor || 'transparent' }}
                         className={`bible-font text-stone-200 ${idx === 0 && state.chapter === '1' ? 'drop-cap' : ''} ${hColor ? 'px-2 py-1 rounded' : ''}`}
-                       >
+                      >
                         {v.text}
-                       </p>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -161,52 +166,52 @@ const BibleReader: React.FC<BibleReaderProps> = ({
       {/* Verse Tool Menu overlay */}
       {selectedVerse && (
         <div className="fixed inset-x-0 bottom-0 z-[60] p-6 animate-in slide-in-from-bottom-full duration-300">
-           <div className="max-w-xl mx-auto glass-dark border border-[#D4AF37]/30 rounded-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] space-y-6">
-              <header className="flex justify-between items-center border-b border-white/5 pb-4">
-                 <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em]">{state.book} {state.chapter}:{selectedVerse}</span>
-                 <button onClick={() => setSelectedVerse(null)} className="text-stone-600 hover:text-white p-1">✕</button>
-              </header>
+          <div className="max-w-xl mx-auto glass-dark border border-[#D4AF37]/30 rounded-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] space-y-6">
+            <header className="flex justify-between items-center border-b border-white/5 pb-4">
+              <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em]">{state.book} {state.chapter}:{selectedVerse}</span>
+              <button onClick={() => setSelectedVerse(null)} className="text-stone-600 hover:text-white p-1">✕</button>
+            </header>
 
-              <div className="grid grid-cols-4 gap-4">
-                 <button onClick={() => { navigator.clipboard.writeText(`${state.book} ${state.chapter}:${selectedVerse} - ${content.find(v => v.number === selectedVerse)?.text}`); setSelectedVerse(null); }} className="flex flex-col items-center gap-2 group">
-                    <span className="text-xl group-hover:scale-110 transition-transform">📋</span>
-                    <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Copy</span>
-                 </button>
-                 <button onClick={() => storage.addBookmark({book: state.book, chapter: state.chapter, verse: selectedVerse!, timestamp: Date.now()})} className="flex flex-col items-center gap-2 group">
-                    <span className="text-xl group-hover:scale-110 transition-transform">🔖</span>
-                    <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Bookmark</span>
-                 </button>
-                 <button onClick={() => applyHighlight('#D4AF3733')} className="flex flex-col items-center gap-2 group">
-                    <span className="text-xl group-hover:scale-110 transition-transform">🖍️</span>
-                    <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Highlight</span>
-                 </button>
-                 <button onClick={() => { 
-                    const text = prompt("Add a note:"); 
-                    if(text) storage.saveNote(`${state.book}-${state.chapter}-${selectedVerse}`, text);
-                    setSelectedVerse(null);
-                 }} className="flex flex-col items-center gap-2 group">
-                    <span className="text-xl group-hover:scale-110 transition-transform">📝</span>
-                    <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Note</span>
-                 </button>
+            <div className="grid grid-cols-4 gap-4">
+              <button onClick={() => { navigator.clipboard.writeText(`${state.book} ${state.chapter}:${selectedVerse} - ${content.find(v => v.number === selectedVerse)?.text}`); setSelectedVerse(null); }} className="flex flex-col items-center gap-2 group">
+                <span className="text-xl group-hover:scale-110 transition-transform">📋</span>
+                <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Copy</span>
+              </button>
+              <button onClick={() => storage.addBookmark({ book: state.book, chapter: state.chapter, verse: selectedVerse!, timestamp: Date.now() })} className="flex flex-col items-center gap-2 group">
+                <span className="text-xl group-hover:scale-110 transition-transform">🔖</span>
+                <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Bookmark</span>
+              </button>
+              <button onClick={() => applyHighlight('#D4AF3733')} className="flex flex-col items-center gap-2 group">
+                <span className="text-xl group-hover:scale-110 transition-transform">🖍️</span>
+                <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Highlight</span>
+              </button>
+              <button onClick={() => {
+                const text = prompt("Add a note:");
+                if (text) storage.saveNote(`${state.book}-${state.chapter}-${selectedVerse}`, text);
+                setSelectedVerse(null);
+              }} className="flex flex-col items-center gap-2 group">
+                <span className="text-xl group-hover:scale-110 transition-transform">📝</span>
+                <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest">Note</span>
+              </button>
+            </div>
+
+            <div className="h-px bg-white/5" />
+
+            <div className="space-y-3">
+              <h4 className="text-[8px] font-bold text-stone-700 uppercase tracking-[0.4em] text-center">AI Study Tools (Uses Credit)</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {Object.entries(MODE_LABELS).slice(1).map(([mode, { icon, label }]) => (
+                  <button
+                    key={mode}
+                    onClick={() => { onStudyVerse?.(mode as AppMode, selectedVerse!); setSelectedVerse(null); }}
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-bold text-stone-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all flex items-center gap-2"
+                  >
+                    <span>{icon}</span> {label}
+                  </button>
+                ))}
               </div>
-
-              <div className="h-px bg-white/5" />
-
-              <div className="space-y-3">
-                 <h4 className="text-[8px] font-bold text-stone-700 uppercase tracking-[0.4em] text-center">AI Study Tools (Uses Credit)</h4>
-                 <div className="flex flex-wrap justify-center gap-2">
-                    {Object.entries(MODE_LABELS).slice(1).map(([mode, { icon, label }]) => (
-                       <button 
-                        key={mode} 
-                        onClick={() => { onStudyVerse?.(mode as AppMode, selectedVerse!); setSelectedVerse(null); }} 
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-bold text-stone-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all flex items-center gap-2"
-                       >
-                        <span>{icon}</span> {label}
-                       </button>
-                    ))}
-                 </div>
-              </div>
-           </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
