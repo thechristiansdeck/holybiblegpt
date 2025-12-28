@@ -131,7 +131,9 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'home': return <HomeView onOpenPassage={handleOpenPassage} onTabChange={setActiveTab} translation={currentTranslation} />;
-      case 'read': return <BibleReader state={readerState} translation={currentTranslation} onClose={() => { }} onNavigate={handleNavigateReader} onStudyVerse={handleStudyVerse} onReport={() => setShowReportForm(true)} />;
+      case 'read':
+      case 'study': // Keep reader visible during study
+        return <BibleReader state={readerState} translation={currentTranslation} onClose={() => setActiveTab('home')} onNavigate={handleNavigateReader} onStudyVerse={handleStudyVerse} onReport={() => setShowReportForm(true)} />;
       case 'library': return <LibraryView onOpenPassage={handleOpenPassage} />;
       case 'learn': return <LearningView onOpenPassage={handleOpenPassage} onStudyEvent={handleStudyEvent} />;
       case 'references': return <ReferencedView onOpenPassage={handleOpenPassage} />;
