@@ -1,0 +1,32 @@
+
+import React from 'react';
+
+const FAQView: React.FC = () => {
+  const faqs = [
+    { q: "Is this app free?", a: "Yes. The Bible reader and basic tools are free for everyone." },
+    { q: "Can I use it offline?", a: "Yes. Use the Scriptorium Settings to download the full KJV for offline use." },
+    { q: "Is my data private?", a: "Yes. Your notes and prayers stay on your device. We do not sell your data." },
+    { q: "Who built this?", a: "Built by a small team dedicated to sharing the Word through modern technology." },
+    { q: "Is the AI always right?", a: "No. AI is a tool for study. Always check everything against Scripture." }
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-12 max-w-2xl mx-auto w-full space-y-12">
+      <header className="text-center space-y-4">
+        <h2 className="accent-font text-2xl font-bold gold-gradient-text uppercase tracking-widest">Common Questions</h2>
+        <p className="text-[10px] text-stone-600 uppercase tracking-widest">FAQ</p>
+      </header>
+
+      <div className="space-y-6">
+        {faqs.map((f, i) => (
+          <div key={i} className="glass-dark border border-white/5 p-8 rounded-3xl space-y-3">
+            <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest">Q: {f.q}</h3>
+            <p className="text-stone-400 text-sm leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default FAQView;
