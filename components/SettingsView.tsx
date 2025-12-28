@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { storage } from '../services/storageService';
-import { downloadFullKJV } from '../services/bibleService';
+import { initializeOfflineKJV } from '../services/bibleService';
 import { AppSettings, AppTab } from '../types';
 
 interface SettingsViewProps {
@@ -11,7 +11,7 @@ interface SettingsViewProps {
 
 const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) => {
   const [settings, setSettings] = useState<AppSettings>(storage.getSettings());
-  const [syncProgress, setSyncProgress] = useState<number | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const aiUsage = storage.getAIUsage();
 
   const update = (newSettings: Partial<AppSettings>) => {
@@ -21,9 +21,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
   };
 
   const startSync = async () => {
-    setSyncProgress(0);
-    try { await downloadFullKJV(setSyncProgress); } 
-    catch { setSyncProgress(null); }
+    setSyncStatus("Starting...");
+    try { await initializeOfflineKJV(setSyncStatus); setSyncStatus(null); alert("KJV Offline Ready"); }
+    catch { setSyncStatus("Error"); setTimeout(() => setSyncStatus(null), 2000); }
   };
 
   return (
@@ -38,14 +38,14 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
         <div className="glass-dark border border-[#D4AF37]/20 p-8 rounded-[2rem] space-y-6 shadow-2xl">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">Usage Sanctuary</h3>
           <div className="grid grid-cols-2 gap-4">
-             <div className="bg-stone-900 p-4 rounded-xl text-center border border-white/5">
-                <div className="text-2xl font-bold text-stone-200">{aiUsage.count}</div>
-                <div className="text-[8px] text-stone-600 uppercase tracking-widest mt-1">Daily AI Queries</div>
-             </div>
-             <div className="bg-stone-900 p-4 rounded-xl text-center border border-white/5">
-                <div className="text-2xl font-bold text-[#D4AF37]">{storage.getRemainingAI()}</div>
-                <div className="text-[8px] text-stone-600 uppercase tracking-widest mt-1">Credits Remaining</div>
-             </div>
+            <div className="bg-stone-900 p-4 rounded-xl text-center border border-white/5">
+              <div className="text-2xl font-bold text-stone-200">{aiUsage.count}</div>
+              <div className="text-[8px] text-stone-600 uppercase tracking-widest mt-1">Daily AI Queries</div>
+            </div>
+            <div className="bg-stone-900 p-4 rounded-xl text-center border border-white/5">
+              <div className="text-2xl font-bold text-[#D4AF37]">{storage.getRemainingAI()}</div>
+              <div className="text-[8px] text-stone-600 uppercase tracking-widest mt-1">Credits Remaining</div>
+            </div>
           </div>
           <p className="text-[9px] text-stone-500 uppercase tracking-widest text-center italic">Most Bible reading works offline. AI needs internet.</p>
         </div>
@@ -67,7 +67,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
         {/* Your Data Section */}
         <div className="glass-dark border border-white/5 p-8 rounded-[2rem] space-y-8">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-500">Your Data</h3>
-          
+
           <div className="grid sm:grid-cols-2 gap-8">
             <div className="space-y-4">
               <h4 className="text-[9px] font-bold text-[#D4AF37] uppercase tracking-widest">What saves on your device:</h4>
@@ -107,8 +107,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
         <div className="glass-dark border border-white/5 p-8 rounded-[2rem] space-y-6 text-center">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-500">Sacred Repository</h3>
           <p className="text-xs text-stone-500 leading-relaxed px-4">Download the full KJV for 100% offline access.</p>
-          <button onClick={startSync} disabled={syncProgress !== null} className={`w-full py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${syncProgress !== null ? 'bg-stone-900 text-stone-700' : 'bg-[#D4AF37] text-black shadow-xl hover:scale-[1.01] active:scale-95'}`}>
-            {syncProgress !== null ? `Syncing Scripture... ${syncProgress}%` : 'Download Offline KJV'}
+          <button onClick={startSync} disabled={syncStatus !== null} className={`w-full py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${syncStatus !== null ? 'bg-stone-900 text-stone-700' : 'bg-[#D4AF37] text-black shadow-xl hover:scale-[1.01] active:scale-95'}`}>
+            {syncStatus !== null ? syncStatus : 'Download Offline KJV'}
           </button>
         </div>
 
