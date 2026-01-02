@@ -91,12 +91,21 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
               </li>
             </ul>
 
-            <button
-              onClick={() => alert("Stripe checkout coming in Phase 4")}
-              className="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl uppercase tracking-[0.2em] text-[10px] hover:bg-[#F9E3A5] transition-colors shadow-lg"
-            >
-              Upgrade • $4.99/mo
-            </button>
+            {isPro ? (
+              <button
+                onClick={handleManageBilling}
+                className="w-full bg-stone-800 text-stone-300 font-bold py-4 rounded-xl uppercase tracking-[0.2em] text-[10px] hover:bg-stone-700 transition-colors shadow-lg"
+              >
+                Manage Subscription
+              </button>
+            ) : (
+              <button
+                onClick={handleUpgrade}
+                className="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl uppercase tracking-[0.2em] text-[10px] hover:bg-[#F9E3A5] transition-colors shadow-lg"
+              >
+                Upgrade • $4.99/mo
+              </button>
+            )}
           </div>
         </div>
 
