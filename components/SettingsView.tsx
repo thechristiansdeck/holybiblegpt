@@ -34,6 +34,38 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
       </header>
 
       <section className="space-y-10">
+        {/* HolyBibleGPT Plus Upgrade */}
+        <div className="glass-dark border border-[#D4AF37] p-8 rounded-[2rem] space-y-6 shadow-[0_0_30px_rgba(212,175,55,0.1)] relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 to-transparent opacity-50" />
+
+          <div className="relative z-10 space-y-6 text-center">
+            <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-[#D4AF37]">HolyBibleGPT Plus</h3>
+            <div className="space-y-2">
+              <p className="bible-font text-2xl text-stone-200">Unlock Unlimited Study</p>
+              <p className="text-[10px] text-stone-500 uppercase tracking-widest">Support the ministry & go deeper</p>
+            </div>
+
+            <ul className="text-xs text-stone-400 space-y-3 text-left max-w-xs mx-auto">
+              <li className="flex items-center gap-3">
+                <span className="text-[#D4AF37]">✓</span> Unlimited AI Verse Explanations
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="text-[#D4AF37]">✓</span> Support Server Costs
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="text-[#D4AF37]">✓</span> Priority Support
+              </li>
+            </ul>
+
+            <button
+              onClick={() => alert("Stripe checkout coming in Phase 4")}
+              className="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl uppercase tracking-[0.2em] text-[10px] hover:bg-[#F9E3A5] transition-colors shadow-lg"
+            >
+              Upgrade • $4.99/mo
+            </button>
+          </div>
+        </div>
+
         {/* AI Analytics */}
         <div className="glass-dark border border-[#D4AF37]/20 p-8 rounded-[2rem] space-y-6 shadow-2xl">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">Usage Sanctuary</h3>

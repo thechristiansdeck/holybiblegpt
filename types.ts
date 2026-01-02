@@ -14,7 +14,8 @@ export enum AppMode {
   CONTEXT = 'context',
   DAILY_PLAN = 'daily_plan',
   KIDS = 'kids',
-  PRAYER_HELP = 'prayer_help'
+  PRAYER_HELP = 'prayer_help',
+  THEOLOGIAN = 'theologian'
 }
 
 export enum Translation {
@@ -64,6 +65,7 @@ export interface Message {
   mode?: AppMode;
   links?: PassageLink[];
   isJson?: boolean;
+  isLimitMessage?: boolean;
 }
 
 export type PrayerCategory = 'Family' | 'Health' | 'Church' | 'Growth' | 'Other';

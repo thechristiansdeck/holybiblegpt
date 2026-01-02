@@ -6,9 +6,10 @@ interface MessageBubbleProps {
   message: Message;
   onOpenReader: (link: PassageLink) => void;
   onReport?: () => void;
+  onUpgrade?: () => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, onReport }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, onReport, onUpgrade }) => {
   const isBot = message.role === Role.BOT;
   const [feedback, setFeedback] = useState<'helpful' | 'not-helpful' | null>(null);
 
@@ -27,11 +28,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, on
 
   return (
     <div className={`flex w-full mb-10 ${isBot ? 'justify-start' : 'justify-end'}`}>
-      <div className={`max-w-[95%] sm:max-w-[85%] px-6 py-6 rounded-[2rem] relative group transition-all ${
-        isBot 
-          ? 'glass-dark border border-white/5 shadow-2xl text-stone-200' 
-          : 'bg-stone-900 border border-white/10 text-stone-100 font-medium shadow-xl'
-      }`}>
+      <div className={`max-w-[95%] sm:max-w-[85%] px-6 py-6 rounded-[2rem] relative group transition-all ${isBot
+        ? 'glass-dark border border-white/5 shadow-2xl text-stone-200'
+        : 'bg-stone-900 border border-white/10 text-stone-100 font-medium shadow-xl'
+        }`}>
         {isBot && (
           <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
             <div className="flex items-center gap-3">
@@ -52,11 +52,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, on
             <p className="text-[10px] text-[#D4AF37] italic font-medium">
               Check everything with Scripture. AI makes mistakes.
             </p>
-            
+
             {links.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {links.map((link, idx) => (
-                  <button 
+                  <button
                     key={idx}
                     className="flex items-center gap-2 px-4 py-2.5 bg-stone-950 border border-white/5 rounded-xl text-[10px] font-bold text-[#D4AF37] hover:border-[#D4AF37]/40 hover:bg-stone-900 transition-all shadow-lg"
                     onClick={() => onOpenReader(link)}
@@ -69,27 +69,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, on
 
             <div className="flex items-center gap-4 pt-4 border-t border-white/5">
               <span className="text-[9px] text-stone-600 uppercase tracking-widest font-bold">Feedback:</span>
-              <button 
+              <button
                 onClick={() => setFeedback('helpful')}
                 className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full border transition-all ${feedback === 'helpful' ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]' : 'border-white/5 text-stone-600 hover:text-stone-400'}`}
               >
                 Helpful
               </button>
-              <button 
+              <button
                 onClick={() => setFeedback('not-helpful')}
                 className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full border transition-all ${feedback === 'not-helpful' ? 'bg-red-500/20 border-red-500 text-red-400' : 'border-white/5 text-stone-600 hover:text-stone-400'}`}
               >
                 Not Helpful
               </button>
             </div>
-            
+
             <footer className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                 <div className="w-6 h-6 rounded-full bg-stone-900 flex items-center justify-center text-[10px] text-stone-600">⚠</div>
-                 <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">Verify with Scripture • Study Actively</span>
+                <div className="w-6 h-6 rounded-full bg-stone-900 flex items-center justify-center text-[10px] text-stone-600">⚠</div>
+                <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">Verify with Scripture • Study Actively</span>
               </div>
               <div className="flex gap-2">
-                 <button onClick={onReport} className="text-[8px] font-bold text-stone-700 hover:text-red-500 uppercase tracking-widest p-2 transition-colors">Report an issue</button>
+                <button onClick={onReport} className="text-[8px] font-bold text-stone-700 hover:text-red-500 uppercase tracking-widest p-2 transition-colors">Report an issue</button>
               </div>
             </footer>
           </div>
@@ -99,6 +99,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onOpenReader, on
           {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
+
+      {message.isLimitMessage && (
+        <div className="absolute -bottom-16 left-0 right-0 flex justify-center w-full z-10">
+          <button
+            onClick={() => onUpgrade?.()}
+            className="bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-[10px] px-8 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border border-white/20 animate-in fade-in slide-in-from-top-4 duration-500"
+          >
+            Upgrade to HolyBibleGPT Plus
+          </button>
+        </div>
+      )}
     </div>
   );
 };

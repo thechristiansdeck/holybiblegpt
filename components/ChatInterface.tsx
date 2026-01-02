@@ -17,9 +17,9 @@ interface ChatInterfaceProps {
   onTabChange?: (tab: AppTab) => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
-  currentTranslation, 
-  onOpenReader, 
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  currentTranslation,
+  onOpenReader,
   currentMode,
   pendingQuery,
   isVerseSpecific,
@@ -57,11 +57,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     if (!trimmedText || isLoading) return;
 
     if (!storage.canUseAI()) {
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        role: Role.BOT, 
-        text: "You reached today’s AI limit. Please keep reading. New questions reset tomorrow.", 
-        timestamp: Date.now() 
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: Role.BOT,
+        text: "You reached today’s free limit. Upgrade to continue using study tools.",
+        timestamp: Date.now(),
+        isLimitMessage: true
       }]);
       return;
     }
@@ -77,18 +78,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     try {
       const history = messages
-        .filter(m => m.id !== '1') 
-        .map(m => ({ 
-          role: (m.role === Role.BOT ? 'assistant' : 'user') as 'assistant' | 'user', 
-          content: m.text 
+        .filter(m => m.id !== '1')
+        .map(m => ({
+          role: (m.role === Role.BOT ? 'assistant' : 'user') as 'assistant' | 'user',
+          content: m.text
         }));
       history.push({ role: 'user', content: trimmedText });
 
       await sendMessageStream(
-        currentMode, 
-        currentTranslation, 
-        settings.kidsMode, 
-        history, 
+        currentMode,
+        currentTranslation,
+        settings.kidsMode,
+        history,
         (chunk) => {
           setMessages(prev => prev.map(msg => msg.id === botMessageId ? { ...msg, text: chunk } : msg));
         }
@@ -117,8 +118,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scroll-smooth">
-        {messages.map(msg => <MessageBubble key={msg.id} message={msg} onOpenReader={onOpenReader} onReport={onReport} />)}
-        
+        {messages.map(msg => <MessageBubble key={msg.id} message={msg} onOpenReader={onOpenReader} onReport={onReport} onUpgrade={() => onTabChange?.('settings')} />)}
+
         {isLoading && <div className="animate-pulse text-[#D4AF37] text-xs uppercase tracking-widest">Studying Scripture...</div>}
       </div>
 
@@ -133,7 +134,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             className="w-full pl-7 pr-16 py-4 bg-black/40 border border-white/10 rounded-2xl focus:outline-none focus:ring-1 focus:ring-[#D4AF37] text-stone-200 bible-font text-lg disabled:opacity-50"
           />
           <button type="submit" disabled={isLoading || !input.trim() || !storage.canUseAI()} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#D4AF37] text-black disabled:bg-stone-800 disabled:text-stone-600 transition-colors">
-             ↑
+            ↑
           </button>
         </form>
 
@@ -141,7 +142,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <p className="text-[9px] text-stone-600 uppercase tracking-widest">
             AI is for explanation only. Scripture is the final authority.
           </p>
-          <button 
+          <button
             onClick={() => onTabChange?.('support')}
             className="text-[9px] font-bold text-[#D4AF37] uppercase tracking-widest hover:underline"
           >

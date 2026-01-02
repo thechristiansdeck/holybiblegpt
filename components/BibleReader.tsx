@@ -120,8 +120,8 @@ const BibleReader: React.FC<BibleReaderProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => window.history.length > 1 ? window.history.back() : onClose()} className="p-2 text-stone-500 hover:text-[#D4AF37] flex items-center gap-1">
-            <span className="text-lg">←</span> <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Back</span>
+          <button onClick={onClose} className="p-2 text-stone-500 hover:text-[#D4AF37] flex items-center gap-2 transition-colors">
+            <span className="text-xl">←</span> <span className="text-[10px] font-bold uppercase tracking-widest">Back</span>
           </button>
           <div className="h-4 w-px bg-white/10 mx-2"></div>
           <button onClick={() => onNavigate(state.book, (Math.max(1, parseInt(state.chapter) - 1)).toString())} className="p-2 text-stone-600 hover:text-white">←</button>
@@ -129,8 +129,8 @@ const BibleReader: React.FC<BibleReaderProps> = ({
         </div>
       </div>
 
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 md:px-12 py-12 scroll-smooth">
-        <div className="max-w-7xl mx-auto w-full">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 md:px-0 py-12 scroll-smooth">
+        <div className="max-w-3xl mx-auto w-full">
           <header className="mb-16 text-center space-y-4">
             <h2 className="accent-font text-5xl font-bold tracking-[0.1em] gold-gradient-text uppercase">{state.book} {state.chapter}</h2>
             <p className="text-[10px] uppercase font-bold tracking-[0.4em] text-stone-700">Holy Scripture • {translation}</p>
@@ -197,19 +197,13 @@ const BibleReader: React.FC<BibleReaderProps> = ({
 
             <div className="h-px bg-white/5" />
 
-            <div className="space-y-3">
-              <h4 className="text-[8px] font-bold text-stone-700 uppercase tracking-[0.4em] text-center">AI Study Tools (Uses Credit)</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {Object.entries(MODE_LABELS).slice(1).map(([mode, { icon, label }]) => (
-                  <button
-                    key={mode}
-                    onClick={() => { onStudyVerse?.(mode as AppMode, selectedVerse!); setSelectedVerse(null); }}
-                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-bold text-stone-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all flex items-center gap-2"
-                  >
-                    <span>{icon}</span> {label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => { onStudyVerse?.(AppMode.THEOLOGIAN, selectedVerse!); setSelectedVerse(null); }}
+                className="px-6 py-3 bg-[#D4AF37]/10 border border-[#D4AF37] rounded-xl text-[10px] font-bold text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all uppercase tracking-[0.2em] flex items-center gap-2"
+              >
+                <span>✨</span> Explain Verse
+              </button>
             </div>
           </div>
         </div>
