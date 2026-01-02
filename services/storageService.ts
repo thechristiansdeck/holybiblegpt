@@ -23,7 +23,7 @@ export const storage = {
     const list = storage.getBookmarks().filter(x => !(x.book === b.book && x.chapter === b.chapter && x.verse === b.verse));
     localStorage.setItem(KEYS.BOOKMARKS, JSON.stringify([b, ...list]));
   },
-  
+
   getHighlights: (): Highlight[] => JSON.parse(localStorage.getItem(KEYS.HIGHLIGHTS) || '[]'),
   addHighlight: (h: Highlight) => {
     const list = storage.getHighlights().filter(x => !(x.book === h.book && x.chapter === h.chapter && x.verse === h.verse));
@@ -50,7 +50,7 @@ export const storage = {
     return stored ? { ...defaults, ...JSON.parse(stored) } : defaults;
   },
   saveSettings: (s: AppSettings) => localStorage.setItem(KEYS.SETTINGS, JSON.stringify(s)),
-  
+
   saveLastRead: (book: string, chapter: string, verse: number) => {
     const settings = storage.getSettings();
     settings.lastRead = { book, chapter, verse, timestamp: Date.now() };
@@ -102,12 +102,35 @@ export const storage = {
     const progress = storage.getProgress();
     if (progress.length === 0) return 0;
     // Simple mock logic for streak calculation based on dates
-    return progress.length; 
+    return progress.length;
   },
   isWarningAccepted: (): boolean => localStorage.getItem(KEYS.WARNING_ACCEPTED) === 'true',
   acceptWarning: () => localStorage.setItem(KEYS.WARNING_ACCEPTED, 'true'),
   markDayComplete: (dateStr: string) => {
     const p = storage.getProgress();
     if (!p.includes(dateStr)) localStorage.setItem(KEYS.PROGRESS, JSON.stringify([...p, dateStr]));
+  },
+
+  // Monetization & Identity
+  getUserId: (): string => {
+    let uid = localStorage.getItem('hbgpt_user_id');
+    if (!uid) {
+      uid = crypto.randomUUID();
+      localStorage.setItem('hbgpt_user_id', uid);
+    }
+    return uid;
+  },
+
+  isPro: async (): Promise<boolean> => {
+    // Check local cache first (short TTL or session based? For now, trust server primarily but cache for speed)
+    // Actually, simple fetch to our new API
+    try {
+      const uid = storage.getUserId();
+      const res = await fetch(`/api/check-status?userId=${uid}`);
+      const data = await res.json();
+      return data.isPro === true;
+    } catch {
+      return false; // Default to free on error
+    }
   }
 };

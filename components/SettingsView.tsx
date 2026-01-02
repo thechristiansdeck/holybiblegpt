@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { storage } from '../services/storageService';
 import { initializeOfflineKJV } from '../services/bibleService';
 import { AppSettings, AppTab } from '../types';
@@ -13,6 +13,40 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onTabChange, onReport }) =>
   const [settings, setSettings] = useState<AppSettings>(storage.getSettings());
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const aiUsage = storage.getAIUsage();
+
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    storage.isPro().then(setIsPro);
+  }, []);
+
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: storage.getUserId() })
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      alert("Billing system unavailable. Please try again.");
+    }
+  };
+
+  const handleManageBilling = async () => {
+    try {
+      const res = await fetch('/api/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: storage.getUserId() })
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      alert("Portal unavailable.");
+    }
+  };
 
   const update = (newSettings: Partial<AppSettings>) => {
     const s = { ...settings, ...newSettings };

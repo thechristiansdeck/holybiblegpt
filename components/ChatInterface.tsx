@@ -56,7 +56,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const trimmedText = text.trim();
     if (!trimmedText || isLoading) return;
 
-    if (!storage.canUseAI()) {
+    const isPro = await storage.isPro();
+    if (!isPro && !storage.canUseAI()) {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: Role.BOT,

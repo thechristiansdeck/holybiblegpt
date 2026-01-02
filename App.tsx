@@ -72,6 +72,18 @@ const App: React.FC = () => {
       setPrepMessage(msg);
     }).then(() => setIsPreparing(false));
 
+    // Billing Status Check
+    const params = new URLSearchParams(window.location.search);
+    const billingStatus = params.get('billing_status');
+    if (billingStatus === 'success') {
+      setActiveTab('settings');
+      setTimeout(() => alert("Upgrade Successful! Thank you for supporting the ministry."), 1000);
+      window.history.replaceState({}, '', '/');
+    } else if (billingStatus === 'cancel') {
+      setActiveTab('settings');
+      window.history.replaceState({}, '', '/');
+    }
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(e => console.error(e));
