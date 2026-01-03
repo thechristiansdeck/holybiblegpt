@@ -29,7 +29,6 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
     { id: 'harmony', label: 'Gospels', icon: '🔄' },
     { id: 'learn', label: 'Timeline', icon: '📜' },
     { id: 'kids', label: 'Kids Mode', icon: '🎨' },
-    { id: 'support', label: 'Support', icon: '❤️' },
   ];
 
   const infoLinks: { id: AppTab; label: string; icon: string }[] = [
@@ -43,11 +42,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
     <button
       key={link.id}
       onClick={() => onTabChange(link.id)}
-      className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition-all group ${
-        activeTab === link.id 
-          ? 'bg-[#D4AF37] text-black shadow-lg scale-[1.02]' 
+      className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition-all group ${activeTab === link.id
+          ? 'bg-[#D4AF37] text-black shadow-lg scale-[1.02]'
           : 'text-stone-400 hover:bg-white/5 hover:text-stone-100'
-      }`}
+        }`}
     >
       <span className="text-lg shrink-0" aria-hidden="true">{link.icon}</span>
       <span className="text-[10px] font-bold uppercase tracking-[0.15em]">{link.label}</span>
@@ -71,7 +69,7 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
             <div className="space-y-1 mb-6">
               {mainLinks.map(renderLink)}
             </div>
-            
+
             <div className="px-4 mb-2 text-[8px] font-bold text-stone-700 uppercase tracking-widest">Utility</div>
             <div className="space-y-1">
               {infoLinks.map(renderLink)}

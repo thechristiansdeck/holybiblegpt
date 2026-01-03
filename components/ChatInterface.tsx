@@ -139,16 +139,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </button>
         </form>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-2">
-          <p className="text-[9px] text-stone-600 uppercase tracking-widest">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 px-2">
+          <p className="text-[9px] text-stone-600 uppercase tracking-widest text-center">
             AI is for explanation only. Scripture is the final authority.
           </p>
-          <button
-            onClick={() => onTabChange?.('support')}
-            className="text-[9px] font-bold text-[#D4AF37] uppercase tracking-widest hover:underline"
-          >
-            Support Ministry
-          </button>
         </div>
       </div>
     </div>
