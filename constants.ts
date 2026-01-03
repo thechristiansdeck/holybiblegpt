@@ -1,4 +1,3 @@
-```
 import { AppMode, Translation } from './types';
 
 export const GLOBAL_BEHAVIOR = (translation: Translation) => `
